@@ -1,0 +1,168 @@
+const int entrada8 = 8;
+const int salida10 = 10;
+const int salida11 = 11;
+const int salida12 = 12;
+const int salida2 = 2;
+const int salida3 = 3;
+const int salida4 = 4;
+const int salida5 = 5;
+const int entrada22 = 22;
+int contador = 0;
+int contadorPulsaciones = 0;
+bool senalRecibida = false;
+bool requisitosCumplidos = false;
+bool inicio = false;
+
+void setup() {
+  pinMode(entrada8, INPUT_PULLUP);
+  pinMode(salida10, OUTPUT);
+  pinMode(salida11, OUTPUT);
+  pinMode(salida12, OUTPUT);
+  pinMode(salida2, OUTPUT);
+  pinMode(salida3, OUTPUT);
+  pinMode(salida4, OUTPUT);
+  pinMode(salida5, OUTPUT);
+  pinMode(entrada22, INPUT_PULLUP);
+  Serial.begin(9600);
+}
+
+void loop() {
+  if (inicio == false) {
+    Serial.println("PRIMERA PIEZA DEL DIA");
+    int contadorPulsosEntrada22 = 0;
+    digitalWrite(salida11, HIGH);
+    digitalWrite(salida10, HIGH);
+    digitalWrite(salida12, HIGH);
+  
+    while (contadorPulsosEntrada22 < 2) {
+      if (digitalRead(entrada22) == HIGH) {
+        contadorPulsosEntrada22++;
+        Serial.println("PEDAL ACCIONADO");
+        digitalWrite(salida12, LOW);
+        delay(5000);
+       
+      }
+     digitalWrite(salida12, HIGH); 
+    }
+    digitalWrite(salida11, LOW);
+    digitalWrite(salida12, LOW);
+    Serial.println("ESPERANDO ");
+    delay(5000);
+    digitalWrite(salida10, LOW);
+    contadorPulsosEntrada22 = 0;
+
+    inicio = true;
+    digitalWrite(salida10, LOW);
+    digitalWrite(salida11, LOW);
+    digitalWrite(salida12, LOW);
+    digitalWrite(salida2, LOW);
+    digitalWrite(salida3, LOW);
+    digitalWrite(salida4, LOW);
+    digitalWrite(salida5, LOW);
+    delay(500);
+  }
+
+  while (true) {
+    int valorEntrada1 = analogRead(A1);
+    int valorEntrada2 = analogRead(A2);
+    int valorEntrada3 = analogRead(A3);
+    int valorEntrada4 = analogRead(A4);
+    int valorEntrada5 = analogRead(A5);
+    int valorEntrada6 = analogRead(A6);
+    delay(2000);
+    int comprobacion1 = analogRead(A1);
+    int comprobacion2 = analogRead(A2);
+    int comprobacion3 = analogRead(A3);
+    int comprobacion4 = analogRead(A4);
+    int comprobacion5 = analogRead(A5);
+    int comprobacion6 = analogRead(A6);
+
+    digitalWrite(salida10, LOW);
+    digitalWrite(salida11, LOW);
+    digitalWrite(salida12, LOW);
+
+    if (valorEntrada1 == 1023 && !senalRecibida && comprobacion1 == valorEntrada1) {
+      Serial.println("Señal detectada en entrada A1, se espera 16");
+      digitalWrite(salida2, HIGH);
+      senalRecibida = true;
+      contador = 16;
+    }
+
+    if (valorEntrada2 == 1023 && !senalRecibida && comprobacion2 == valorEntrada2) {
+      Serial.println("Señal recibida en entrada A2, se espera 11");
+      senalRecibida = true;
+      contador = 11;
+      digitalWrite(salida3, HIGH);
+    }
+
+    if (valorEntrada3 == 1023 && !senalRecibida && comprobacion3 == valorEntrada3) {
+      Serial.println("Señal recibida en la entrada A3, se espera 14");
+      senalRecibida = true;
+      contador = 14;
+      digitalWrite(salida4, HIGH);
+    }
+
+    if (valorEntrada4 == 1023 && !senalRecibida && comprobacion4 == valorEntrada4) {
+      Serial.println("Señal recibida en la entrada A4, se espera 12");
+      senalRecibida = true;
+      contador = 12;
+      digitalWrite(salida5, HIGH);
+    }
+    if (valorEntrada5 == 1023 && !senalRecibida && comprobacion5 == valorEntrada5) {
+      Serial.println("Señal recibida en la entrada A5, se espera 7");
+      senalRecibida = true;
+      contador = 7;
+      digitalWrite(salida2, HIGH);
+      digitalWrite(salida3, HIGH);
+    }
+    if (valorEntrada6 == 1023 && !senalRecibida && comprobacion6 == valorEntrada6) {
+      Serial.println("Señal recibida en la entrada A6, se espera 6");
+      senalRecibida = true;
+      contador = 6;
+      digitalWrite(salida4, HIGH);
+      digitalWrite(salida5, HIGH);
+    }
+
+    if (digitalRead(entrada8) == HIGH) {
+      if (contadorPulsaciones < contador) {
+        contadorPulsaciones++;
+        Serial.print("Pulsaciones: ");+
+        Serial.println(contadorPulsaciones);
+      }
+      digitalWrite(salida12, HIGH);
+    
+    }
+
+    if (contadorPulsaciones >= contador && senalRecibida) {
+      requisitosCumplidos = true;
+      digitalWrite(salida2, LOW);
+      digitalWrite(salida3, LOW);
+      digitalWrite(salida4, LOW);
+      digitalWrite(salida5, LOW);
+    }
+
+    if (requisitosCumplidos) {
+      digitalWrite(salida10, HIGH);
+      digitalWrite(salida11, HIGH);
+      Serial.println("¡Requisitos cumplidos! Encendiendo salida 10 y 11");
+      int contadorPulsosEntrada22 = 0;
+      while (contadorPulsosEntrada22 < 2) {
+        if (digitalRead(entrada22) == HIGH) {
+          contadorPulsosEntrada22++;
+          Serial.println("pedal precionado");
+          digitalWrite(salida12, LOW);  
+          delay(15);
+        }
+      digitalWrite(salida12, HIGH);  
+      }
+    
+      
+      Serial.println("salio del ultimo bucle ");
+      delay(5000);
+      contadorPulsaciones = 0;
+      senalRecibida = false;
+      requisitosCumplidos = false;
+      break;
+    }
+  }
+}
